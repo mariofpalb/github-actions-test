@@ -1,11 +1,37 @@
 #!/bin/bash
 
-PULL_REQUESTS=$(curl -L \
+echo "-------- COMIENZO DE SCRIPT --------"
+
+PULL_REQUESTS=($(curl -s -L \
   -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer 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" \
+  -H "Authorization: Bearer <API_TOKEN>" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   https://api.github.com/repos/mariofpalb/github-actions-test/pulls \
-  | jq '.[] | select(.user.login=="mariofpalb") | .[].user.login' \
-  )
-# NO FUNCIONA EL SELECT DE ARRIBA
-echo ${PULL_REQUESTS}
+  | jq '.[] | select(.user.login=="mariofpalb") | .number' \
+  ))
+
+echo "This are the number of the PRs to close ${PULL_REQUESTS[@]}"
+
+for pr_number in "${PULL_REQUESTS[@]}"; do
+  echo "---------------------------------------------"
+  echo "Cerrando pull request $pr_number"
+
+  http_status_code=$(curl -s -o /dev/null -w "%{http_code}" -L \
+    -X PATCH \
+    -H "Accept: application/vnd.github+json" \
+    -H "Authorization: Bearer <API_TOKEN>" \
+    -H "X-GitHub-Api-Version: 2022-11-28" \
+    https://api.github.com/repos/mariofpalb/github-actions-test/pulls/$pr_number \
+    -d '{"state": "closed"}')
+
+  echo "El código de respuesta de la solicitud curl es $http_status_code"
+
+  if [ $http_status_code -ne 200 ]; then
+    echo "La solicitud curl no fue exitosa"
+  else
+    echo "Se ha cerrado la PR $pr_number de manera correcta"
+  fi
+
+done
+
+echo "-------- SCRIPT FINALIZADO --------"
