@@ -1,0 +1,24 @@
+name: Close Previous PRs
+on:
+  pull_request:
+    types:
+      - opened
+
+jobs:
+  close-previous-prs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Detect PR Owner
+        run: |
+          echo "The owner of the PR is ${{ github.event.pull_request.user.login }}"
+          if [[ "${{ github.event.pull_request.user.login }}" == "mariofpalb" ]]; then
+            curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&user=mariofpalb" \
+              | jq -r '.[] | select(.number != ${{ github.event.pull_request.number }}) | .number' \
+              | xargs -I {} curl -X PATCH -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/{}" \
+              -d '{"state":"closed"}'
+          fi
