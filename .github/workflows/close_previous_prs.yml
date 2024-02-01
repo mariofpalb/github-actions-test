@@ -17,10 +17,10 @@ jobs:
           if [[ "${{ github.event.pull_request.user.login }}" == "mariofpalb" ]]; then
             PULL_REQUEST=($(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&user=mariofpalb" \
-              | jq -r '.[] | select(.number != ${{ github.event.pull_request.number }}) | .number' \
+              | jq '.[] | select(.number != ${{ github.event.pull_request.number }}) | .number' \
             ))
 
-            echo "The PRs to close are: $PULL_REQUEST"
+            echo "The PRs to close are: ${PULL_REQUEST[@]}"
 
             for pr in "${PULL_REQUEST[@]}"; do
               echo "Closing PR $pr"
@@ -29,5 +29,4 @@ jobs:
                 "https://api.github.com/repos/${{ github.repository }}/pulls/$pr" \
                 -d '{"state":"closed"}'
             done
-            
           fi
