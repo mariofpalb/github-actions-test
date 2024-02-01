@@ -16,8 +16,8 @@ jobs:
           echo "The owner of the PR is ${{ github.event.pull_request.user.login }}"
           if [[ "${{ github.event.pull_request.user.login }}" == "mariofpalb" ]]; then
             PULL_REQUEST=($(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&user=mariofpalb" \
-              | jq '.[] | select(.number != ${{ github.event.pull_request.number }}) | .number' \
+              "https://api.github.com/repos/${{ github.repository }}/pulls?state=open" \
+              | jq '.[] | select(.number != ${{ github.event.pull_request.number }} && .user.login == "mariofpalb") | .number' \
             ))
 
             echo "The PRs to close are: ${PULL_REQUEST[@]}"
