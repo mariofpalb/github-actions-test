@@ -11,14 +11,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Detect PR Owner
+      - name: Close previous PRs from \#${{ github.event.pull_request.number }}
         run: |
           echo "The owner of the PR is ${{ github.event.pull_request.user.login }}"
           if [[ "${{ github.event.pull_request.user.login }}" == "mariofpalb" ]]; then
             curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               "https://api.github.com/repos/${{ github.repository }}/pulls?state=open" \
               | jq -r '.[] | select((.number != ${{ github.event.pull_request.number }}) and .user.login == "mariofpalb") | .number' \
-              | xargs -I {} curl -X PATCH -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              | xargs -I {} curl -s -X PATCH -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                 "https://api.github.com/repos/${{ github.repository }}/pulls/{}" \
                 -d '{"state":"closed"}'
           fi
