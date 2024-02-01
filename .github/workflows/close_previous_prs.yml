@@ -15,10 +15,19 @@ jobs:
         run: |
           echo "The owner of the PR is ${{ github.event.pull_request.user.login }}"
           if [[ "${{ github.event.pull_request.user.login }}" == "mariofpalb" ]]; then
-            curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            PULL_REQUEST=($(curl -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
               "https://api.github.com/repos/${{ github.repository }}/pulls?state=open&user=mariofpalb" \
               | jq -r '.[] | select(.number != ${{ github.event.pull_request.number }}) | .number' \
-              | xargs -I {} curl -X PATCH -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/${{ github.repository }}/pulls/{}" \
-              -d '{"state":"closed"}'
+            ))
+
+            echo "The PRs to close are: $PULL_REQUEST"
+
+            for pr in "${PULL_REQUEST[@]}"; do
+              echo "Closing PR $pr"
+              curl -X PATCH -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/pulls/$pr" \
+                -d '{"state":"closed"}'
+            done
+            
           fi
