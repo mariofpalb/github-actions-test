@@ -4,17 +4,17 @@ on:
     types:
       - opened
     branches:
-      - "*"
-    condition: ${{ github.event.pull_request.user.login == 'mariofpalb' }}
+      - "mariofpalb-*"
 
 jobs:
   close-previous-prs:
+    if: github.event.pull_request.user.login == 'mariofpalb'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Close previous PRs from \#${{ github.event.pull_request.number }}
+      - name: Close previous PRs from ${{ github.event.pull_request.number }}
         run: |
           echo "The owner of the PR is ${{ github.event.pull_request.user.login }}"
           if [[ "${{ github.event.pull_request.user.login }}" == "mariofpalb" ]]; then
