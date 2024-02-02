@@ -4,13 +4,13 @@ on:
     types:
       - opened
     branches:
-      - "mariofpalb-**"
+      - "main"
     paths:
       - "**.txt"
 
 jobs:
   close-previous-prs:
-    if: github.event.pull_request.user.login == 'mariofpalb'
+    if: github.event.pull_request.user.login == 'mariofpalb' && startsWith(github.head_ref, 'releases/')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
