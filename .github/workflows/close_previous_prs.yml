@@ -4,7 +4,9 @@ on:
     types:
       - opened
     branches:
-      - "mariofpalb-*"
+      - "mariofpalb-**"
+    paths:
+      - "**.txt"
 
 jobs:
   close-previous-prs:
